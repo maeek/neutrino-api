@@ -1,0 +1,10 @@
+{
+  "eslint.workingDirectories": [
+    "gateway",
+    "permission",
+    "task",
+    "token",
+    "user",
+    "authentication"
+  ]
+}

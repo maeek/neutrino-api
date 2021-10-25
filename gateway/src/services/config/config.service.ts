@@ -6,7 +6,7 @@ export class ConfigService {
   constructor() {
     this.envConfig = {};
     this.envConfig.port = process.env.API_PORT;
-    this.envConfig.tokenService = {
+    this.envConfig.authService = {
       options: {
         port: process.env.API_PORT,
         host: process.env.AUTHENTICATION_SERVICE_HOST,

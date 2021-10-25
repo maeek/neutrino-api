@@ -102,10 +102,19 @@ services:
       - "./db/init/:/docker-entrypoint-initdb.d/"
     networks:
       - backend
+      - frontend
     env_file:
       - .env.test
     ports:
       - 27017:27017
+  redis:
+    image: redis
+    restart: always
+    hostname: redis
+    networks:
+      - backend
+    env_file:
+      - .env.test
 networks:
   backend:
     driver: bridge

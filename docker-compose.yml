@@ -66,6 +66,14 @@ services:
       - 27017:27017
     networks:
       - backend
+  redis:
+    image: redis
+    restart: always
+    hostname: redis
+    networks:
+      - backend
+    env_file:
+      - .env.test
 networks:
   backend:
     driver: bridge

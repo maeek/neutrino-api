@@ -1,0 +1,5 @@
+export enum MESSAGE_PATTERNS {
+  LOGIN = 'LOGIN',
+  LOGOUT = 'LOGOUT',
+  KEEPALIVE = 'KEEPALIVE',
+}

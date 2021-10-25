@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TokenController } from './token.controller';
-import { AuthenticationService } from './services/token.service';
+import { AuthController } from './auth.controller';
+import { AuthenticationService } from './services/auth.service';
 import { JwtConfigService } from './services/config/jwt-config.service';
 import { MongoConfigService } from './services/config/mongo-config.service';
-import { TokenSchema } from './schemas/token.schema';
+import { Token, TokenSchema } from './schemas/token.schema';
 
 @Module({
   imports: [
@@ -17,12 +17,12 @@ import { TokenSchema } from './schemas/token.schema';
     }),
     MongooseModule.forFeature([
       {
-        name: 'Token',
+        name: Token.name,
         schema: TokenSchema,
       },
     ]),
   ],
-  controllers: [TokenController],
+  controllers: [AuthController],
   providers: [AuthenticationService],
 })
 export class TokenModule {}

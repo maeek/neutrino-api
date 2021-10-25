@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { Transport, TcpOptions } from '@nestjs/microservices';
 
-import { TokenModule } from './token.module';
+import { TokenModule } from './auth.module';
 import { ConfigService } from './services/config/config.service';
 
 async function bootstrap() {

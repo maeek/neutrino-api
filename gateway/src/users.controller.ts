@@ -36,7 +36,7 @@ import { ConfirmUserResponseDto } from './interfaces/user/dto/confirm-user-respo
 @ApiTags('users')
 export class UsersController {
   constructor(
-    @Inject('TOKEN_SERVICE') private readonly tokenServiceClient: ClientProxy,
+    @Inject('AUTH_SERVICE') private readonly authServiceClient: ClientProxy,
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
   ) {}
 
@@ -86,7 +86,7 @@ export class UsersController {
 
     const createTokenResponse: IServiveTokenCreateResponse =
       await firstValueFrom(
-        this.tokenServiceClient.send('token_create', {
+        this.authServiceClient.send('token_create', {
           userId: createUserResponse.user.id,
         }),
       );
@@ -125,7 +125,7 @@ export class UsersController {
 
     const createTokenResponse: IServiveTokenCreateResponse =
       await firstValueFrom(
-        this.tokenServiceClient.send('token_create', {
+        this.authServiceClient.send('token_create', {
           userId: getUserResponse.user.id,
         }),
       );
@@ -151,7 +151,7 @@ export class UsersController {
 
     const destroyTokenResponse: IServiceTokenDestroyResponse =
       await firstValueFrom(
-        this.tokenServiceClient.send('token_destroy', {
+        this.authServiceClient.send('token_destroy', {
           userId: userInfo.id,
         }),
       );

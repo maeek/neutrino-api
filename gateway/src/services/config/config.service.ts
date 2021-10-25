@@ -9,7 +9,7 @@ export class ConfigService {
     this.envConfig.tokenService = {
       options: {
         port: process.env.API_PORT,
-        host: process.env.TOKEN_SERVICE_HOST,
+        host: process.env.AUTHENTICATION_SERVICE_HOST,
       },
       transport: Transport.TCP,
     };
@@ -31,6 +31,13 @@ export class ConfigService {
       options: {
         port: process.env.API_PORT,
         host: process.env.PERMISSION_SERVICE_HOST,
+      },
+      transport: Transport.TCP,
+    };
+    this.envConfig.devicesService = {
+      options: {
+        port: process.env.API_PORT,
+        host: process.env.DEVICES_SERVICE_HOST,
       },
       transport: Transport.TCP,
     };

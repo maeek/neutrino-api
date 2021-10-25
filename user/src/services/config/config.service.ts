@@ -5,10 +5,10 @@ export class ConfigService {
 
   constructor() {
     this.envConfig = {
-      port: process.env.USER_SERVICE_PORT,
+      port: process.env.API_PORT,
     };
     this.envConfig.baseUri = process.env.BASE_URI;
-    this.envConfig.gatewayPort = process.env.API_GATEWAY_PORT;
+    this.envConfig.gatewayPort = process.env.API_PORT;
     // this.envConfig.mailerService = {
     //   options: {
     //     port: process.env.MAILER_SERVICE_PORT,

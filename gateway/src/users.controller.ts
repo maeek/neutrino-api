@@ -84,11 +84,12 @@ export class UsersController {
       );
     }
 
-    const createTokenResponse: IServiveTokenCreateResponse = await firstValueFrom(
-      this.tokenServiceClient.send('token_create', {
-        userId: createUserResponse.user.id,
-      }),
-    );
+    const createTokenResponse: IServiveTokenCreateResponse =
+      await firstValueFrom(
+        this.tokenServiceClient.send('token_create', {
+          userId: createUserResponse.user.id,
+        }),
+      );
 
     return {
       message: createUserResponse.message,
@@ -122,11 +123,12 @@ export class UsersController {
       );
     }
 
-    const createTokenResponse: IServiveTokenCreateResponse = await firstValueFrom(
-      this.tokenServiceClient.send('token_create', {
-        userId: getUserResponse.user.id,
-      }),
-    );
+    const createTokenResponse: IServiveTokenCreateResponse =
+      await firstValueFrom(
+        this.tokenServiceClient.send('token_create', {
+          userId: getUserResponse.user.id,
+        }),
+      );
 
     return {
       message: createTokenResponse.message,
@@ -147,11 +149,12 @@ export class UsersController {
   ): Promise<LogoutUserResponseDto> {
     const userInfo = request.user;
 
-    const destroyTokenResponse: IServiceTokenDestroyResponse = await firstValueFrom(
-      this.tokenServiceClient.send('token_destroy', {
-        userId: userInfo.id,
-      }),
-    );
+    const destroyTokenResponse: IServiceTokenDestroyResponse =
+      await firstValueFrom(
+        this.tokenServiceClient.send('token_destroy', {
+          userId: userInfo.id,
+        }),
+      );
 
     if (destroyTokenResponse.status !== HttpStatus.OK) {
       throw new HttpException(
@@ -178,11 +181,12 @@ export class UsersController {
   public async confirmUser(
     @Param() params: ConfirmUserDto,
   ): Promise<ConfirmUserResponseDto> {
-    const confirmUserResponse: IServiceUserConfirmResponse = await firstValueFrom(
-      this.userServiceClient.send('user_confirm', {
-        link: params.link,
-      }),
-    );
+    const confirmUserResponse: IServiceUserConfirmResponse =
+      await firstValueFrom(
+        this.userServiceClient.send('user_confirm', {
+          link: params.link,
+        }),
+      );
 
     if (confirmUserResponse.status !== HttpStatus.OK) {
       throw new HttpException(

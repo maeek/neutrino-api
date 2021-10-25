@@ -50,9 +50,10 @@ export class TasksController {
   ): Promise<GetTasksResponseDto> {
     const userInfo = request.user;
 
-    const tasksResponse: IServiceTaskSearchByUserIdResponse = await firstValueFrom(
-      this.taskServiceClient.send('task_search_by_user_id', userInfo.id),
-    );
+    const tasksResponse: IServiceTaskSearchByUserIdResponse =
+      await firstValueFrom(
+        this.taskServiceClient.send('task_search_by_user_id', userInfo.id),
+      );
 
     return {
       message: tasksResponse.message,
@@ -150,13 +151,14 @@ export class TasksController {
     @Body() taskRequest: UpdateTaskDto,
   ): Promise<UpdateTaskResponseDto> {
     const userInfo = request.user;
-    const updateTaskResponse: IServiceTaskUpdateByIdResponse = await firstValueFrom(
-      this.taskServiceClient.send('task_update_by_id', {
-        id: params.id,
-        userId: userInfo.id,
-        task: taskRequest,
-      }),
-    );
+    const updateTaskResponse: IServiceTaskUpdateByIdResponse =
+      await firstValueFrom(
+        this.taskServiceClient.send('task_update_by_id', {
+          id: params.id,
+          userId: userInfo.id,
+          task: taskRequest,
+        }),
+      );
 
     if (updateTaskResponse.status !== HttpStatus.OK) {
       throw new HttpException(

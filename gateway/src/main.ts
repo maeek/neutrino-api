@@ -7,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const options = new DocumentBuilder()
     .setTitle('API docs')
-    // .addTag('users')
+    .addTag('users')
     // .addTag('tasks')
     .setVersion('1.0')
     .build();

@@ -21,10 +21,10 @@ services:
       - backend
     links:
       - db
-  token:
-    build: ./token
+  authentication:
+    build: ./authentication
     restart: always
-    hostname: token
+    hostname: authentication
     env_file:
       - .env
     networks:
@@ -50,7 +50,7 @@ services:
     links:
       - db
   db:
-    image: "mongo:3.7"
+    image: "mongo"
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
@@ -58,6 +58,7 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
       MONGO_USER: ${MONGO_USER}
       MONGO_PASSWORD: ${MONGO_PASSWORD}
+      TZ: "Europe/Warsaw"
     volumes:
       - "./db/data/db-files:/data/db"
       - "./db/init/:/docker-entrypoint-initdb.d/"

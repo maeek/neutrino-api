@@ -1,7 +1,26 @@
 version: "3"
 services:
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile.development
+    restart: always
+    hostname: gateway
+    env_file:
+      - .env.test
+    networks:
+      - backend
+      - frontend
+    links:
+      - db
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./gateway/:/var/www/gateway/"
   task:
-    build: ./task
+    build:
+      context: ./task
+      dockerfile: Dockerfile.development
     restart: always
     hostname: task
     env_file:
@@ -10,32 +29,52 @@ services:
       - backend
     links:
       - db
-    ports:
-      - ${TASK_SERVICE_PORT}:${TASK_SERVICE_PORT}
-  token:
-    build: ./token
+    volumes:
+      - "./task/:/var/www/task/"
+  devices:
+    build:
+      context: ./devices
+      dockerfile: Dockerfile.development
     restart: always
-    hostname: token
+    hostname: devices
     env_file:
       - .env.test
     networks:
       - backend
     links:
       - db
-    ports:
-      - ${TOKEN_SERVICE_PORT}:${TOKEN_SERVICE_PORT}
+    volumes:
+      - "./devices/:/var/www/devices/"
+  authentication:
+    build:
+      context: ./authentication
+      dockerfile: Dockerfile.development
+    restart: always
+    hostname: authentication
+    env_file:
+      - .env.test
+    networks:
+      - backend
+    links:
+      - db
+    volumes:
+      - "./authentication/:/var/www/authentication/"
   permission:
-    build: ./permission
+    build:
+      context: ./permission
+      dockerfile: Dockerfile.development
     restart: always
     hostname: permission
     env_file:
       - .env.test
     networks:
       - backend
-    ports:
-      - ${PERMISSION_SERVICE_PORT}:${PERMISSION_SERVICE_PORT}
+    volumes:
+      - "./permission/:/var/www/permission/"
   user:
-    build: ./user
+    build:
+      context: ./user
+      dockerfile: Dockerfile.development
     restart: always
     hostname: user
     env_file:
@@ -44,14 +83,21 @@ services:
       - backend
     links:
       - db
-    ports:
-      - ${USER_SERVICE_PORT}:${USER_SERVICE_PORT}
+    volumes:
+      - "./user/:/var/www/user/"
   db:
-    image: "mongo:3.7"
+    build:
+      context: ./db
+      dockerfile: Dockerfile.development
     restart: always
     hostname: db
     environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      TZ: "Europe/Warsaw"
     volumes:
       - "./db/init/:/docker-entrypoint-initdb.d/"
     networks:
@@ -63,3 +109,6 @@ services:
 networks:
   backend:
     driver: bridge
+  frontend:
+    external:
+      name: infrastructure

@@ -3,8 +3,9 @@
     "gateway",
     "permission",
     "task",
-    "token",
     "user",
+    "db",
+    "devices",
     "authentication"
   ]
 }

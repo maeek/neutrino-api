@@ -106,9 +106,16 @@ services:
     restart: always
     hostname: rabbitmq
     networks:
+      - frontend
       - backend
     env_file:
       - .env.test
+    volumes:
+      - "./configs/neutrino-api.test.json:/tmp/neutrino-api.test.json"
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions "/tmp/neutrino-api.test.json"
+    ports:
+      - "15672:15672"
 networks:
   backend:
     driver: bridge

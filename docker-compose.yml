@@ -11,16 +11,6 @@ services:
     networks:
       - backend
       - frontend
-  task:
-    build: ./task
-    restart: always
-    hostname: task
-    env_file:
-      - .env
-    networks:
-      - backend
-    links:
-      - db
   authentication:
     build: ./authentication
     restart: always
@@ -73,7 +63,22 @@ services:
     networks:
       - backend
     env_file:
-      - .env.test
+      - .env
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    hostname: rabbitmq
+    networks:
+      - frontend
+      - backend
+    env_file:
+      - .env
+    volumes:
+      - "./configs/neutrino-api.json:/tmp/neutrino-api.json"
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions "/tmp/neutrino-api.json"
+    ports:
+      - "15672:15672"
 networks:
   backend:
     driver: bridge

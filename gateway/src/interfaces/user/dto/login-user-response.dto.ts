@@ -11,5 +11,5 @@ export class LoginUserResponseDto {
     token: string;
   };
   @ApiProperty({ example: null, nullable: true })
-  errors: { [key: string]: any };
+  errors?: string;
 }

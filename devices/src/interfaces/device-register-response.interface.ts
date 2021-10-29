@@ -2,11 +2,12 @@ import { HttpStatus } from '@nestjs/common';
 
 export interface IDeviceResponse {
   status: HttpStatus;
-  resources: {
+  resources?: {
     device: {
       device_id: string;
-    } | null;
+      ref_id: string;
+    };
   };
   message: string;
-  errors?: string;
+  error?: string;
 }

@@ -19,5 +19,5 @@ export class CreateUserResponseDto {
     token: string;
   };
   @ApiProperty({ example: null, nullable: true })
-  errors: { [key: string]: any };
+  errors?: string;
 }

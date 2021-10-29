@@ -1,11 +1,12 @@
-import { HttpStatus } from "@nestjs/common";
-import { Device } from "../schemas/device.schema";
+import { HttpStatus } from '@nestjs/common';
+import { Device } from '../schemas/device.schema';
 
 export interface IDeviceGetResponse {
   status: HttpStatus;
-  resources: {
-    device: Device;
+  resources?: {
+    device?: Device;
+    devices?: Device[];
   };
   message: string;
-  errors?: string;
+  error?: string;
 }

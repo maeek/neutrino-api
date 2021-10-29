@@ -18,5 +18,5 @@ export class GetUserByTokenResponseDto {
     user: IUser;
   };
   @ApiProperty({ example: null, nullable: true })
-  errors: { [key: string]: any };
+  errors?: string;
 }

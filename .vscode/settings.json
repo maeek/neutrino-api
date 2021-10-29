@@ -2,7 +2,6 @@
   "eslint.workingDirectories": [
     "gateway",
     "permission",
-    "task",
     "user",
     "db",
     "devices",

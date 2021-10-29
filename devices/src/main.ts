@@ -12,8 +12,8 @@ async function bootstrap() {
       urls: [configService.get('rabbitmqUrl')],
       queue: configService.get('deviceQueue'),
       queueOptions: {
-        durable: false
-      }
+        durable: false,
+      },
     },
   } as RmqOptions);
   await app.listen();

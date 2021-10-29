@@ -20,23 +20,36 @@ export class DevicesController {
         const createResult = await this.devicesService.registerDevice(
           data.meta,
         );
-        const { device_id } = createResult;
+        const { device_id, id } = createResult as any;
 
-        result = {
-          status: HttpStatus.CREATED,
-          message: 'device_register_success',
-          resources: {
-            device: device_id ? { device_id } : null
-          }
-        };
+        if (!createResult) {
+          result = {
+            status: HttpStatus.BAD_REQUEST,
+            message: 'device_register_bad_request',
+            error: "Couldn't create new device",
+          };
+        } else {
+          result = {
+            status: HttpStatus.CREATED,
+            message: 'device_register_success',
+            resources: {
+              device: device_id
+                ? {
+                    device_id,
+                    ref_id: id,
+                  }
+                : null,
+            },
+          };
+        }
       } catch (e) {
         result = {
           status: HttpStatus.BAD_REQUEST,
           message: 'device_register_bad_request',
           resources: {
-            device: null
+            device: null,
           },
-          errors: e?.message,
+          error: e?.message,
         };
       }
     } else {
@@ -44,9 +57,9 @@ export class DevicesController {
         status: HttpStatus.BAD_REQUEST,
         message: 'device_register_bad_request',
         resources: {
-          device: null
+          device: null,
         },
-        errors: 'Insufficient data to complete the request',
+        error: 'Insufficient data to complete the request',
       };
     }
 
@@ -54,16 +67,48 @@ export class DevicesController {
   }
 
   @MessagePattern(MESSAGE_PATTERNS.DEVICE_GET)
-  public async getDevice(data: { device_id: string }): Promise<IDeviceGetResponse> {
-    const device = await this.devicesService.getDevice(data.device_id);
+  public async getDevices(data: {
+    device_id: string | string[];
+  }): Promise<IDeviceGetResponse> {
+    const devices = await this.devicesService.getDevices(data.device_id);
+
+    if (!devices) {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        message: 'device_get_not_found',
+        error: 'Device not found',
+      };
+    }
 
     return {
       status: data?.device_id ? HttpStatus.OK : HttpStatus.BAD_REQUEST,
+      message: devices ? 'device_get_success' : 'device_get_bad_request',
+      resources: {
+        devices,
+      },
+    };
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.DEVICE_GET_OBJECTID)
+  public async getDeviceByObjecId(data: {
+    device: string;
+  }): Promise<IDeviceGetResponse> {
+    const device = await this.devicesService.getDeviceByObjectId(data.device);
+
+    if (!device) {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        message: 'device_get_not_found',
+        error: 'Device not found',
+      };
+    }
+
+    return {
+      status: data?.device ? HttpStatus.OK : HttpStatus.BAD_REQUEST,
       message: device ? 'device_get_success' : 'device_get_bad_request',
       resources: {
         device,
       },
-      errors: null,
     };
   }
 
@@ -74,7 +119,6 @@ export class DevicesController {
     return {
       status: data?.device_id ? HttpStatus.OK : HttpStatus.BAD_REQUEST,
       message: device ? 'device_remove_success' : 'device_remove_bad_request',
-      errors: null,
     };
   }
 }

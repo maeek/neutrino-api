@@ -6,7 +6,7 @@ export type DeviceDocument = Device & Document;
 
 function transformValue(doc, ret: { [key: string]: any }) {
   delete ret._id;
-  delete ret.id;
+  // delete ret.id;
 }
 
 @Schema({

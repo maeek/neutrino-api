@@ -8,38 +8,43 @@ export class ConfigService {
     this.envConfig.port = process.env.API_PORT;
     this.envConfig.authService = {
       options: {
-        port: process.env.API_PORT,
-        host: process.env.AUTHENTICATION_SERVICE_HOST,
+        urls: [process.env.RABBITMQ_URL],
+        queue: process.env.RABBITMQ_AUTH_QUEUE,
+        queueOptions: {
+          durable: false,
+        },
       },
-      transport: Transport.TCP,
+      transport: Transport.RMQ,
     };
     this.envConfig.userService = {
       options: {
-        port: process.env.API_PORT,
-        host: process.env.USER_SERVICE_HOST,
+        urls: [process.env.RABBITMQ_URL],
+        queue: process.env.RABBITMQ_USER_QUEUE,
+        queueOptions: {
+          durable: false,
+        },
       },
-      transport: Transport.TCP,
-    };
-    this.envConfig.taskService = {
-      options: {
-        port: process.env.API_PORT,
-        host: process.env.TASK_SERVICE_HOST,
-      },
-      transport: Transport.TCP,
+      transport: Transport.RMQ,
     };
     this.envConfig.permissionService = {
       options: {
-        port: process.env.API_PORT,
-        host: process.env.PERMISSION_SERVICE_HOST,
+        urls: [process.env.RABBITMQ_URL],
+        queue: process.env.RABBITMQ_PERMISSION_QUEUE,
+        queueOptions: {
+          durable: false,
+        },
       },
-      transport: Transport.TCP,
+      transport: Transport.RMQ,
     };
     this.envConfig.devicesService = {
       options: {
-        port: process.env.API_PORT,
-        host: process.env.DEVICES_SERVICE_HOST,
+        urls: [process.env.RABBITMQ_URL],
+        queue: process.env.RABBITMQ_DEVICES_QUEUE,
+        queueOptions: {
+          durable: false,
+        },
       },
-      transport: Transport.TCP,
+      transport: Transport.RMQ,
     };
   }
 

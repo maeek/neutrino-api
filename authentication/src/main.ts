@@ -1,17 +1,20 @@
 import { NestFactory } from '@nestjs/core';
-import { Transport, TcpOptions } from '@nestjs/microservices';
-
-import { TokenModule } from './auth.module';
+import { Transport, RmqOptions } from '@nestjs/microservices';
+import { AuthModule } from './auth.module';
 import { ConfigService } from './services/config/config.service';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice(TokenModule, {
-    transport: Transport.TCP,
+  const configService = new ConfigService();
+  const app = await NestFactory.createMicroservice(AuthModule, {
+    transport: Transport.RMQ,
     options: {
-      host: '0.0.0.0',
-      port: new ConfigService().get('port'),
+      urls: [configService.get('rabbitmqUrl')],
+      queue: configService.get('authQueue'),
+      queueOptions: {
+        durable: false,
+      },
     },
-  } as TcpOptions);
+  } as RmqOptions);
   await app.listen();
 }
 bootstrap();

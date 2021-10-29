@@ -12,8 +12,8 @@ export class DevicesRepository {
         return this.deviceModel.findOne(deviceFilterQuery);
     }
 
-    async find(devicesFilterQuery: FilterQuery<DeviceDocument>): Promise<Device[]> {
-        return this.deviceModel.find(devicesFilterQuery)
+    async find(devicesFilterQuery: FilterQuery<DeviceDocument>, limit = 20): Promise<Device[]> {
+        return this.deviceModel.find(devicesFilterQuery).limit(limit);
     }
 
     async create(device: Partial<Device> & { name: string; meta: string }): Promise<Device> {

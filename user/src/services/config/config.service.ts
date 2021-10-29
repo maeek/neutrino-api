@@ -5,17 +5,9 @@ export class ConfigService {
 
   constructor() {
     this.envConfig = {
-      port: process.env.API_PORT,
+      rabbitmqUrl: process.env.RABBITMQ_URL,
+      authQueue: process.env.RABBITMQ_USER_QUEUE,
     };
-    this.envConfig.baseUri = process.env.BASE_URI;
-    this.envConfig.gatewayPort = process.env.API_PORT;
-    // this.envConfig.mailerService = {
-    //   options: {
-    //     port: process.env.MAILER_SERVICE_PORT,
-    //     host: process.env.MAILER_SERVICE_HOST,
-    //   },
-    //   transport: Transport.TCP,
-    // };
   }
 
   get(key: string): any {

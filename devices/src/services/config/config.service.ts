@@ -3,7 +3,8 @@ export class ConfigService {
 
   constructor() {
     this.envConfig = {
-      port: process.env.API_PORT,
+      rabbitmqUrl: process.env.RABBITMQ_URL,
+      deviceQueue: process.env.RABBITMQ_DEVICES_QUEUE,
     };
   }
 

@@ -17,20 +17,6 @@ services:
       - "8080:8080"
     volumes:
       - "./gateway/:/var/www/gateway/"
-  task:
-    build:
-      context: ./task
-      dockerfile: Dockerfile.development
-    restart: always
-    hostname: task
-    env_file:
-      - .env.test
-    networks:
-      - backend
-    links:
-      - db
-    volumes:
-      - "./task/:/var/www/task/"
   devices:
     build:
       context: ./devices
@@ -111,6 +97,14 @@ services:
     image: redis
     restart: always
     hostname: redis
+    networks:
+      - backend
+    env_file:
+      - .env.test
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    hostname: rabbitmq
     networks:
       - backend
     env_file:

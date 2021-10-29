@@ -1,69 +1,64 @@
-import * as mongoose from 'mongoose';
-import * as bcrypt from 'bcrypt';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { UserRoles } from '../enums/user-roles';
 
-const SALT_ROUNDS = 10;
+export type UserDocument = User & Document;
 
 function transformValue(doc, ret: { [key: string]: any }) {
   delete ret._id;
-  delete ret.password;
+  delete ret.id;
 }
 
-export interface IUserSchema extends mongoose.Document {
-  email: string;
-  password: string;
-  is_confirmed: boolean;
-  comparePassword: (password: string) => Promise<boolean>;
-  getEncryptedPassword: (password: string) => Promise<string>;
+@Schema({
+  toJSON: {
+    virtuals: true,
+    versionKey: false,
+    transform: transformValue,
+  },
+  toObject: {
+    virtuals: true,
+    versionKey: false,
+    transform: transformValue,
+  },
+})
+export class User {
+  @Prop({
+    lowercase: true,
+    required: [true, 'Username cannot be empty'],
+    unique: true,
+    index: true,
+    maxlength: 40,
+    minlength: 2,
+    trim: true,
+  })
+  readonly username: string;
+
+  @Prop({
+    required: [true, 'Hash cannot be empty'],
+  })
+  hash: string;
+
+  @Prop({
+    type: String,
+    required: [true, 'User role is required'],
+    default: UserRoles.USER
+  })
+  role: string;
+
+  @Prop({ type: Date, default: Date.now })
+  createdAt: Date;
+
+  @Prop(String)
+  bio: string;
+
+  @Prop(String)
+  avatar: string;
+
+  @Prop(String)
+  nickname: string;
+
+  @Prop(String)
+  fullName: string;
 }
 
-export const UserSchema = new mongoose.Schema<IUserSchema>(
-  {
-    email: {
-      type: String,
-      required: [true, 'Email can not be empty'],
-      match: [
-        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-        'Email should be valid',
-      ],
-    },
-    is_confirmed: {
-      type: Boolean,
-      required: [true, 'Confirmed can not be empty'],
-    },
-    password: {
-      type: String,
-      required: [true, 'Password can not be empty'],
-      minlength: [6, 'Password should include at least 6 chars'],
-    },
-  },
-  {
-    toObject: {
-      virtuals: true,
-      versionKey: false,
-      transform: transformValue,
-    },
-    toJSON: {
-      virtuals: true,
-      versionKey: false,
-      transform: transformValue,
-    },
-  },
-);
-
-UserSchema.methods.getEncryptedPassword = (
-  password: string,
-): Promise<string> => {
-  return bcrypt.hash(String(password), SALT_ROUNDS);
-};
-
-UserSchema.methods.compareEncryptedPassword = function (password: string) {
-  return bcrypt.compare(password, this.password);
-};
-
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
-  this.password = await this.getEncryptedPassword(this.password);
-  next();
-});
+export const UserSchema = SchemaFactory.createForClass(User);

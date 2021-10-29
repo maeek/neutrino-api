@@ -6,7 +6,7 @@ export class ConfigService {
   constructor() {
     this.envConfig = {
       rabbitmqUrl: process.env.RABBITMQ_URL,
-      authQueue: process.env.RABBITMQ_USER_QUEUE,
+      userQueue: process.env.RABBITMQ_USER_QUEUE,
     };
   }
 

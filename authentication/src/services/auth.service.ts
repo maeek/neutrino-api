@@ -1,61 +1,169 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Query } from 'mongoose';
-import { TokenDocument } from 'src/schemas/token.schema';
+import { ClientProxy } from '@nestjs/microservices';
+import { Schema } from 'mongoose';
+import { firstValueFrom } from 'rxjs';
+import { DEVICE_MESSAGE_PATTERNS } from '../constants';
+import { LoginDto } from '../interfaces/dto/login-dto';
+import { TokenRepository } from '../token.repository';
+
+const getTestUser = (username: string) =>
+  Promise.resolve({
+    username: username,
+    password: 'test',
+    type: 'user',
+  });
 
 @Injectable()
-export class AuthenticationService {
+export class AuthService {
   constructor(
+    @Inject('DEVICES_SERVICE')
+    private readonly devicesServiceClient: ClientProxy,
     private readonly jwtService: JwtService,
-    @InjectModel('Token') private readonly tokenModel: Model<TokenDocument>,
+    private readonly tokenRepository: TokenRepository,
   ) {}
 
-  // public createToken(userId: string): Promise<IToken> {
-  //   const token = this.jwtService.sign(
-  //     {
-  //       userId,
-  //     },
-  //     {
-  //       expiresIn: 30 * 24 * 60 * 60,
-  //     },
-  //   );
+  public async validateUserLocal(
+    username: string,
+    password: string,
+  ): Promise<any> {
+    const foundUser = await getTestUser(username);
 
-  //   return new this.tokenModel({
-  //     user_id: userId,
-  //     token,
-  //   }).save();
-  // }
+    if (!foundUser) return null;
+    if (foundUser.password !== password) return null;
 
-  // public deleteTokenForUserId(userId: string): Query<any, any> {
-  //   return this.tokenModel.remove({
-  //     user_id: userId,
-  //   });
-  // }
+    return {
+      ...foundUser,
+      password: undefined,
+    };
+  }
 
-  // public async decodeToken(token: string) {
-  //   const tokenModel = await this.tokenModel.find({
-  //     token,
-  //   });
-  //   let result = null;
+  public async login({
+    username,
+    password,
+    // loginStrategy = 1,
+    ref_id,
+  }: LoginDto & { ref_id: Schema.Types.ObjectId }): Promise<any> {
+    const user = await this.validateUserLocal(username, password);
 
-  //   if (tokenModel && tokenModel[0]) {
-  //     try {
-  //       const tokenData = this.jwtService.decode(tokenModel[0].token) as {
-  //         exp: number;
-  //         userId: any;
-  //       };
-  //       if (!tokenData || tokenData.exp <= Math.floor(+new Date() / 1000)) {
-  //         result = null;
-  //       } else {
-  //         result = {
-  //           userId: tokenData.userId,
-  //         };
-  //       }
-  //     } catch (e) {
-  //       result = null;
-  //     }
-  //   }
-  //   return result;
-  // }
+    if (!user) return;
+
+    return {
+      ok: true,
+      user: {
+        username,
+        type: user.type,
+      },
+      accessToken: await this.createAccessToken(username, user.type),
+      refreshToken: await this.createRefreshToken(username, ref_id),
+    };
+  }
+
+  public async createAccessToken(username: string, role: string) {
+    return this.jwtService.signAsync(
+      {
+        sub: username,
+        role,
+      },
+      {
+        expiresIn: '20m',
+      },
+    );
+  }
+
+  public async createRefreshToken(
+    username: string,
+    device_id: Schema.Types.ObjectId,
+  ) {
+    const refreshToken = await this.jwtService.signAsync(
+      {},
+      {
+        expiresIn: '1y',
+      },
+    );
+
+    await this.tokenRepository.create({
+      user_id: username,
+      device: device_id,
+      refresh_token: refreshToken,
+    });
+
+    return refreshToken;
+  }
+
+  public deleteTokensForUserId(userId: string) {
+    return this.tokenRepository.remove({
+      user_id: userId,
+    });
+  }
+
+  private async searchForDeviceId(device_id: string) {
+    return await firstValueFrom(
+      this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_GET, {
+        device_id,
+      }),
+    );
+  }
+
+  public async deleteTokensForDeviceId(device_id: string) {
+    const deviceResponse = await this.searchForDeviceId(device_id);
+
+    if (deviceResponse.status !== HttpStatus.OK) return false;
+
+    const deleteTokenResponse = await this.tokenRepository.remove({
+      device: deviceResponse.resources.device.id,
+    });
+    const deleteDeviceResponse = await firstValueFrom(
+      this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_REMOVE, {
+        device_id,
+      }),
+    );
+
+    return (
+      deleteTokenResponse.deletedCount &&
+      deleteDeviceResponse.status === HttpStatus.OK
+    );
+  }
+
+  public async deleteTokensForRefreshToken(refresh_token: string) {
+    const tokenResults = await this.tokenRepository.findOne({ refresh_token });
+
+    if (!tokenResults?.device) return false;
+
+    const deviceResponse = await firstValueFrom(
+      this.devicesServiceClient.send(
+        DEVICE_MESSAGE_PATTERNS.DEVICE_GET_OBJECTID,
+        {
+          device: tokenResults.device.toString(),
+        },
+      ),
+    );
+
+    if (deviceResponse.status !== HttpStatus.OK) return false;
+
+    const deleteTokenResponse = await this.tokenRepository.remove({
+      device: deviceResponse.resources.device.id,
+    });
+    const deleteDeviceResponse = await firstValueFrom(
+      this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_REMOVE, {
+        device_id: deviceResponse.resources.device.device_id,
+      }),
+    );
+
+    return (
+      deleteTokenResponse.deletedCount &&
+      deleteDeviceResponse.status === HttpStatus.OK
+    );
+  }
+
+  public async deleteTokens(
+    refresh_token: string,
+    device_id?: string,
+    user_id?: string,
+  ) {
+    if (device_id) return this.deleteTokensForDeviceId(device_id);
+    if (user_id) return this.deleteTokensForUserId(user_id);
+
+    return this.deleteTokensForRefreshToken(refresh_token);
+  }
 }

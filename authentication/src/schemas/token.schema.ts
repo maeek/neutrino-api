@@ -1,46 +1,5 @@
-// import * as mongoose from 'mongoose';
-
-// function transformValue(doc, ret: { [key: string]: any }) {
-//   delete ret._id;
-// }
-
-// export const TokenSchema = new mongoose.Schema(
-//   {
-//     user_id: {
-//       type: String,
-//       required: [true, 'user_id can not be empty'],
-//     },
-//     refresh_token: {
-//       type: String,
-//       required: [true, 'refresh_token token can not be empty'],
-//     },
-//     device_id: {
-//       type: String,
-//       required: [
-//         true,
-//         'New session must be associated with specific device_id',
-//       ],
-//     },
-//     blocked: Boolean,
-//     timestamp: Number,
-//   },
-//   {
-//     toObject: {
-//       virtuals: true,
-//       versionKey: false,
-//       transform: transformValue,
-//     },
-//     toJSON: {
-//       virtuals: true,
-//       versionKey: false,
-//       transform: transformValue,
-//     },
-//   },
-// );
-
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
+import { Document, Schema as MSchema } from 'mongoose';
 
 export type TokenDocument = Token & Document;
 
@@ -67,17 +26,24 @@ export class Token {
   readonly user_id: string;
 
   @Prop({
-    required: [true, 'device_id cannot be empty'],
-    unique: true,
-    default: uuidv4,
+    required: [true, 'device cannot be empty'],
+    default: MSchema.Types.ObjectId,
+    type: MSchema.Types.ObjectId,
+    ref: 'devices',
   })
-  readonly device_id: string;
+  readonly device: MSchema.Types.ObjectId;
 
   @Prop({ type: Number, default: Date.now() })
   timestamp: number;
 
-  @Prop({ required: [true, 'Cannot save session without refresh_token'] } )
+  @Prop({ required: [true, 'Cannot save session without refresh_token'] })
   refresh_token: string;
+
+  @Prop()
+  revoked?: boolean;
+
+  @Prop()
+  revoke_timestamp?: number;
 }
 
 export const TokenSchema = SchemaFactory.createForClass(Token);

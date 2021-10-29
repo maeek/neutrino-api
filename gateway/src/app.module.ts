@@ -2,23 +2,25 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ClientProxyFactory } from '@nestjs/microservices';
 
-import { UsersController } from './users.controller';
+// import { UsersController } from './users.controller';
 
-import { AuthGuard } from './services/guards/authorization.guard';
-import { PermissionGuard } from './services/guards/permission.guard';
+// import { AuthGuard } from './services/guards/authorization.guard';
+// import { PermissionGuard } from './services/guards/permission.guard';
 
 import { ConfigService } from './services/config/config.service';
 import { DevicesController } from './devices.controller';
+import { AuthenticationController } from './authentication.controller';
 
 @Module({
   imports: [],
   controllers: [
-    DevicesController
+    DevicesController,
+    AuthenticationController
   ],
   providers: [
     ConfigService,
     {
-      provide: 'AUTH_SERVICE',
+      provide: 'AUTHENTICATION_SERVICE',
       useFactory: (configService: ConfigService) => {
         const tokenServiceOptions = configService.get('authService');
         return ClientProxyFactory.create(tokenServiceOptions);

@@ -59,7 +59,6 @@ export class UsersController {
       data: {
         user: userResponse.user,
       },
-      errors: null,
     };
   }
 
@@ -78,7 +77,7 @@ export class UsersController {
         {
           message: createUserResponse.message,
           data: null,
-          errors: createUserResponse.errors,
+          error: createUserResponse.errors,
         },
         createUserResponse.status,
       );
@@ -97,7 +96,6 @@ export class UsersController {
         user: createUserResponse.user,
         token: createTokenResponse.token,
       },
-      errors: null,
     };
   }
 
@@ -117,7 +115,6 @@ export class UsersController {
         {
           message: getUserResponse.message,
           data: null,
-          errors: null,
         },
         HttpStatus.UNAUTHORIZED,
       );
@@ -135,7 +132,6 @@ export class UsersController {
       data: {
         token: createTokenResponse.token,
       },
-      errors: null,
     };
   }
 
@@ -161,7 +157,7 @@ export class UsersController {
         {
           message: destroyTokenResponse.message,
           data: null,
-          errors: destroyTokenResponse.errors,
+          error: destroyTokenResponse.errors,
         },
         destroyTokenResponse.status,
       );
@@ -169,7 +165,6 @@ export class UsersController {
 
     return {
       message: destroyTokenResponse.message,
-      errors: null,
       data: null,
     };
   }
@@ -193,7 +188,7 @@ export class UsersController {
         {
           message: confirmUserResponse.message,
           data: null,
-          errors: confirmUserResponse.errors,
+          error: confirmUserResponse.errors,
         },
         confirmUserResponse.status,
       );
@@ -201,7 +196,6 @@ export class UsersController {
 
     return {
       message: confirmUserResponse.message,
-      errors: null,
       data: null,
     };
   }

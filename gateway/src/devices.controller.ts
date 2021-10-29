@@ -45,7 +45,7 @@ export class DevicesController {
         {
           message: devicesResponse.message,
           data: null,
-          errors: devicesResponse.errors,
+          error: devicesResponse.errors,
         },
         devicesResponse.status,
       );
@@ -55,7 +55,7 @@ export class DevicesController {
       resources: {
         device: devicesResponse.resources.device,
       },
-      errors: devicesResponse?.error,
+      error: devicesResponse?.error,
     };
   }
 
@@ -74,7 +74,7 @@ export class DevicesController {
       resources: {
         device: devicesResponse.resources,
       },
-      errors: devicesResponse?.error,
+      error: devicesResponse?.error,
     };
   }
 
@@ -92,7 +92,7 @@ export class DevicesController {
     );
 
     return {
-      errors: devicesResponse?.error,
+      error: devicesResponse?.error,
     };
   }
 }

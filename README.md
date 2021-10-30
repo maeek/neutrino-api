@@ -29,7 +29,7 @@ To run development version execute following commands from the root of the repos
 cp .env.example .env.test
 ```
 
-Populate all necessary values in `.env.test` and copy it to **all** subfolders. Next run following commands to start docker-compose.
+Populate all necessary values in `.env.test` and copy it to **all subfolders**. Next run following commands to start docker-compose.
 
 ```shell
 docker-compose -f docker-compose.test.yml up --build

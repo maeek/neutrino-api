@@ -8,5 +8,5 @@ export interface IDeviceGetResponse {
     devices?: Device[];
   };
   message: string;
-  error?: string;
+  errors?: { [key: string]: string };
 }

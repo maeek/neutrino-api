@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 
-export interface IDeviceGetResponse {
+export interface LogoutResponse {
   status: HttpStatus;
   message: string;
-  error?: string;
+  errors?: { [key: string]: string };
 }

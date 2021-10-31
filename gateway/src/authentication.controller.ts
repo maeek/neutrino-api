@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import {
+  ApiBadRequestResponse,
   ApiBody,
   ApiHeader,
   ApiOkResponse,
@@ -31,7 +32,10 @@ import {
   LoginDto,
   LoginResponseDto,
 } from './interfaces/authentication/dto/login.dto';
-import { LogoutDto } from './interfaces/authentication/dto/logout.dto';
+import {
+  LogoutDto,
+  LogoutResponseDto,
+} from './interfaces/authentication/dto/logout.dto';
 import {
   LogoutErrorResponse,
   LogoutResponse,
@@ -49,6 +53,7 @@ export class AuthenticationController {
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ type: LoginResponse })
   @ApiUnauthorizedResponse({ type: LoginErrorResponse })
+  @ApiBadRequestResponse({ type: LoginErrorResponse })
   public async login(
     @Req() request: Request,
     @Body() dto: LoginDto,
@@ -102,15 +107,16 @@ export class AuthenticationController {
   })
   @ApiOkResponse({ type: LogoutResponse })
   @ApiUnauthorizedResponse({ type: LogoutErrorResponse })
+  @ApiBadRequestResponse({ type: LogoutErrorResponse })
   public async logout(
     @Req() request: Request,
     @Body() dto: LogoutDto,
-  ): Promise<any> {
+  ): Promise<LogoutResponse> {
     const { deviceId, username } = dto;
     const refreshToken = request.headers[API_HEADERS.X_NE_REFRESHTOKEN];
 
-    const logoutResult = await firstValueFrom(
-      this.authenticationServiceClient.send(
+    const { status, message, errors } = await firstValueFrom(
+      this.authenticationServiceClient.send<LogoutResponseDto>(
         AUTHENTICATION_MESSAGE_PATTERNS.LOGOUT,
         {
           deviceId,
@@ -120,13 +126,13 @@ export class AuthenticationController {
       ),
     );
 
-    if (logoutResult.status !== HttpStatus.NO_CONTENT)
+    if (status !== HttpStatus.NO_CONTENT)
       throw new HttpException(
         {
-          message: logoutResult.message,
-          error: logoutResult.errors,
+          message: message,
+          error: errors,
         },
-        logoutResult.status,
+        status,
       );
 
     return {};

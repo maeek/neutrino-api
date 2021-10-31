@@ -1,3 +1,4 @@
+import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LogoutDto {
@@ -14,4 +15,10 @@ export class LogoutDto {
     example: 'test_user',
   })
   username?: string;
+}
+
+export class LogoutResponseDto {
+  status: HttpStatus;
+  message: string;
+  errors: { [key: string]: string };
 }

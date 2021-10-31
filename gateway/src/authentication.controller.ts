@@ -2,18 +2,40 @@ import {
   Body,
   Controller,
   Delete,
+  HttpCode,
   HttpException,
   HttpStatus,
   Inject,
   Post,
   Req,
   Response,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiHeader,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
 import { Request, Response as EResponse } from 'express';
 import { AUTHENTICATION_MESSAGE_PATTERNS } from './constants';
+import {
+  LoginErrorResponse,
+  LoginResponse,
+} from './interfaces/authentication/login-response.dto';
+import { API_HEADERS } from './interfaces/authentication/headers.enum';
+import {
+  LoginDto,
+  LoginResponseDto,
+} from './interfaces/authentication/dto/login.dto';
+import { LogoutDto } from './interfaces/authentication/dto/logout.dto';
+import {
+  LogoutErrorResponse,
+  LogoutResponse,
+} from './interfaces/authentication/logout-response.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -24,66 +46,76 @@ export class AuthenticationController {
   ) {}
 
   @Post('login')
+  @ApiBody({ type: LoginDto })
+  @ApiOkResponse({ type: LoginResponse })
+  @ApiUnauthorizedResponse({ type: LoginErrorResponse })
   public async login(
     @Req() request: Request,
-    @Body() dto: any,
-    @Response() response: EResponse,
-  ): Promise<any> {
+    @Body() dto: LoginDto,
+    @Response() response: EResponse<LoginResponse>,
+  ): Promise<void> {
+    const { newDeviceName, password, username, loginStrategy } = dto;
     const meta = request.headers['user-agent'];
 
-    const loginResponse = await firstValueFrom(
-      this.authenticationServiceClient.send(
+    const { status, message, errors, resources } = await firstValueFrom(
+      this.authenticationServiceClient.send<LoginResponseDto>(
         AUTHENTICATION_MESSAGE_PATTERNS.LOGIN,
         {
-          username: dto.username,
-          password: dto.password,
+          username,
+          password,
+          loginStrategy,
           device: {
             meta,
-            name: dto.deviceName,
+            name: newDeviceName,
           },
         },
       ),
     );
 
-    if (loginResponse.status !== HttpStatus.OK) {
-      throw new HttpException(
-        {
-          message: loginResponse.message,
-          error: loginResponse.errors,
-        },
-        loginResponse.status,
-      );
+    if (status !== HttpStatus.CREATED) {
+      throw new UnauthorizedException({
+        message: message,
+        errors: errors,
+      });
     }
 
-    response.setHeader(
-      'x-ne-refreshtoken',
-      loginResponse.resources.refreshToken,
-    );
+    response.setHeader(API_HEADERS.X_NE_REFRESHTOKEN, resources.refreshToken);
     response
+      .status(status || HttpStatus.CREATED)
       .json({
         resources: {
-          device: {
-            device_id: loginResponse.resources.device.device_id,
-          },
-          user: loginResponse.resources.user,
-          accessToken: loginResponse.resources.accessToken,
+          device: resources.device,
+          user: resources.user,
+          accessToken: resources.accessToken,
         },
       })
       .end();
   }
 
   @Delete('/logout')
-  public async logout(@Req() request: Request, @Body() dto: any): Promise<any> {
-    const { deviceId, userId } = dto;
-    const refreshToken = request.headers['x-ne-refreshtoken'];
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ type: LogoutDto })
+  @ApiHeader({
+    name: 'x-ne-refreshtoken',
+    required: true,
+    example: 'eyASDHOoadjnasda.eyAJODdjoanoansdadasdadojIodho.DHAOISDOHIA842',
+  })
+  @ApiOkResponse({ type: LogoutResponse })
+  @ApiUnauthorizedResponse({ type: LogoutErrorResponse })
+  public async logout(
+    @Req() request: Request,
+    @Body() dto: LogoutDto,
+  ): Promise<any> {
+    const { deviceId, username } = dto;
+    const refreshToken = request.headers[API_HEADERS.X_NE_REFRESHTOKEN];
 
     const logoutResult = await firstValueFrom(
       this.authenticationServiceClient.send(
         AUTHENTICATION_MESSAGE_PATTERNS.LOGOUT,
         {
-          device_id: deviceId,
-          refresh_token: refreshToken,
-          user_id: userId,
+          deviceId,
+          refreshToken,
+          username,
         },
       ),
     );
@@ -99,40 +131,4 @@ export class AuthenticationController {
 
     return {};
   }
-  // @Get('/:device_id')
-  // @ApiOkResponse({
-  //   type: GetUserByTokenResponseDto,
-  // })
-  // public async getDevice(@Param('device_id') device_id: string): Promise<any> {
-  //   const devicesResponse: any = await firstValueFrom(
-  //     this.authenticationServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_GET, {
-  //       device_id,
-  //     }),
-  //   );
-
-  //   return {
-  //     resources: {
-  //       device: devicesResponse.resources,
-  //     },
-  //     error: devicesResponse?.error,
-  //   };
-  // }
-
-  // @Delete('/:device_id')
-  // @ApiOkResponse({
-  //   type: GetUserByTokenResponseDto,
-  // })
-  // public async removeDevice(
-  //   @Param('device_id') device_id: string,
-  // ): Promise<any> {
-  //   const devicesResponse: any = await firstValueFrom(
-  //     this.authenticationServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_REMOVE, {
-  //       device_id,
-  //     }),
-  //   );
-
-  //   return {
-  //     error: devicesResponse?.error,
-  //   };
-  // }
 }

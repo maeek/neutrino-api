@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+// import { APP_GUARD } from '@nestjs/core';
 import { ClientProxyFactory } from '@nestjs/microservices';
-
-// import { UsersController } from './users.controller';
 
 // import { AuthGuard } from './services/guards/authorization.guard';
 // import { PermissionGuard } from './services/guards/permission.guard';
@@ -13,10 +11,7 @@ import { AuthenticationController } from './authentication.controller';
 
 @Module({
   imports: [],
-  controllers: [
-    DevicesController,
-    AuthenticationController
-  ],
+  controllers: [DevicesController, AuthenticationController],
   providers: [
     ConfigService,
     {

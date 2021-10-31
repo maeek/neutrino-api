@@ -11,10 +11,8 @@ import {
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
-import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-
-import { GetUserByTokenResponseDto } from './interfaces/user/dto/get-user-by-token-response.dto';
 import { DEVICE_MESSAGE_PATTERNS } from './constants';
 
 @Controller('devices')
@@ -26,9 +24,6 @@ export class DevicesController {
   ) {}
 
   @Post()
-  @ApiOkResponse({
-    type: GetUserByTokenResponseDto,
-  })
   public async registerDevice(@Req() request: Request): Promise<any> {
     const meta = request.headers['user-agent'];
     const name = 'test name';
@@ -60,9 +55,6 @@ export class DevicesController {
   }
 
   @Get('/:deviceId')
-  @ApiOkResponse({
-    type: GetUserByTokenResponseDto,
-  })
   public async getDevice(@Param('deviceId') deviceId: string): Promise<any> {
     const devicesResponse: any = await firstValueFrom(
       this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_GET, {
@@ -79,9 +71,6 @@ export class DevicesController {
   }
 
   @Delete('/:deviceId')
-  @ApiOkResponse({
-    type: GetUserByTokenResponseDto,
-  })
   public async removeDevice(@Param('deviceId') deviceId: string): Promise<any> {
     const devicesResponse: any = await firstValueFrom(
       this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_REMOVE, {

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Transport, RmqOptions } from '@nestjs/microservices';
 import { AuthModule } from './auth.module';
@@ -15,6 +16,8 @@ async function bootstrap() {
       },
     },
   } as RmqOptions);
+
+  app.useLogger(Logger);
   await app.listen();
 }
 bootstrap();

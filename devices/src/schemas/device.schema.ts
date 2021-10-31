@@ -27,11 +27,11 @@ export class Device {
   name: string;
 
   @Prop({
-    required: [true, 'device_id cannot be empty'],
+    required: [true, 'deviceId cannot be empty'],
     unique: true,
     default: uuidv4,
   })
-  readonly device_id: string;
+  readonly deviceId: string;
 
   @Prop({ type: Number, default: Date.now() })
   timestamp: number;

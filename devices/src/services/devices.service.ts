@@ -6,19 +6,17 @@ import { Device } from '../schemas/device.schema';
 export class DevicesService {
   constructor(private readonly devicesRepository: DevicesRepository) {}
 
-  public registerDevice(meta: string): Promise<Device> {
+  public registerDevice(name: string, meta: string): Promise<Device> {
     return this.devicesRepository.create({
-      name: 'example',
+      name,
       meta,
     });
   }
 
-  public getDevices(device_id: string | string[]): Promise<Device[]> {
+  public getDevices(deviceId: string | string[]): Promise<Device[]> {
     return this.devicesRepository.find({
-      device_id: {
-        $in: [
-          ...(typeof device_id === 'string' ? [device_id] : [...device_id]),
-        ],
+      deviceId: {
+        $in: [...(typeof deviceId === 'string' ? [deviceId] : [...deviceId])],
       },
     });
   }
@@ -27,11 +25,11 @@ export class DevicesService {
     return this.devicesRepository.findOne({ _id });
   }
 
-  public removeDevice(device_id: string) {
-    return this.devicesRepository.remove({ device_id });
+  public removeDevice(deviceId: string) {
+    return this.devicesRepository.remove({ deviceId });
   }
 
-  public renameDevice(device_id: string, name: string): Promise<any> {
-    return this.devicesRepository.findOneAndUpdate({ device_id }, { name });
+  public renameDevice(deviceId: string, name: string): Promise<any> {
+    return this.devicesRepository.findOneAndUpdate({ deviceId }, { name });
   }
 }

@@ -59,14 +59,14 @@ export class DevicesController {
     };
   }
 
-  @Get('/:device_id')
+  @Get('/:deviceId')
   @ApiOkResponse({
     type: GetUserByTokenResponseDto,
   })
-  public async getDevice(@Param('device_id') device_id: string): Promise<any> {
+  public async getDevice(@Param('deviceId') deviceId: string): Promise<any> {
     const devicesResponse: any = await firstValueFrom(
       this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_GET, {
-        device_id,
+        deviceId,
       }),
     );
 
@@ -78,16 +78,14 @@ export class DevicesController {
     };
   }
 
-  @Delete('/:device_id')
+  @Delete('/:deviceId')
   @ApiOkResponse({
     type: GetUserByTokenResponseDto,
   })
-  public async removeDevice(
-    @Param('device_id') device_id: string,
-  ): Promise<any> {
+  public async removeDevice(@Param('deviceId') deviceId: string): Promise<any> {
     const devicesResponse: any = await firstValueFrom(
       this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_REMOVE, {
-        device_id,
+        deviceId,
       }),
     );
 

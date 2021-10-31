@@ -22,8 +22,8 @@ function transformValue(doc, ret: { [key: string]: any }) {
   },
 })
 export class Token {
-  @Prop({ required: [true, 'Token must be associated with user_id'] })
-  readonly user_id: string;
+  @Prop({ required: [true, 'Token must be associated with username'] })
+  readonly username: string;
 
   @Prop({
     required: [true, 'device cannot be empty'],
@@ -36,8 +36,8 @@ export class Token {
   @Prop({ type: Number, default: Date.now() })
   timestamp: number;
 
-  @Prop({ required: [true, 'Cannot save session without refresh_token'] })
-  refresh_token: string;
+  @Prop({ required: [true, 'Cannot save session without refreshToken'] })
+  refreshToken: string;
 
   @Prop()
   revoked?: boolean;

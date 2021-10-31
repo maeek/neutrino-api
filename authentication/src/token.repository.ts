@@ -19,7 +19,7 @@ export class TokenRepository {
   }
 
   async create(
-    token: Partial<Token> & { user_id: string; refresh_token: string },
+    token: Partial<Token> & { username: string; refreshToken: string },
   ) {
     const newToken = new this.tokenModel(token);
     return newToken.save();

@@ -3,8 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { ClientProxy } from '@nestjs/microservices';
 import { Schema } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
+import { LoginResponseResources } from '../interfaces/login-response.interface';
 import { DEVICE_MESSAGE_PATTERNS } from '../constants';
-import { LoginDto } from '../interfaces/dto/login-dto';
+import { LoginDto } from '../interfaces/dto/login.dto';
 import { TokenRepository } from '../token.repository';
 
 const getTestUser = (username: string) =>
@@ -43,10 +44,12 @@ export class AuthService {
     password,
     // loginStrategy = 1,
     ref_id,
-  }: LoginDto & { ref_id: Schema.Types.ObjectId }): Promise<any> {
+  }: LoginDto & {
+    ref_id: Schema.Types.ObjectId;
+  }): Promise<LoginResponseResources> {
     const user = await this.validateUserLocal(username, password);
 
-    if (!user) return;
+    if (!user) return {} as LoginResponseResources;
 
     return {
       ok: true,
@@ -73,7 +76,7 @@ export class AuthService {
 
   public async createRefreshToken(
     username: string,
-    device_id: Schema.Types.ObjectId,
+    deviceId: Schema.Types.ObjectId,
   ) {
     const refreshToken = await this.jwtService.signAsync(
       {},
@@ -83,30 +86,30 @@ export class AuthService {
     );
 
     await this.tokenRepository.create({
-      user_id: username,
-      device: device_id,
-      refresh_token: refreshToken,
+      username,
+      device: deviceId,
+      refreshToken: refreshToken,
     });
 
     return refreshToken;
   }
 
-  public deleteTokensForUserId(userId: string) {
+  public deleteTokensForUserId(username: string) {
     return this.tokenRepository.remove({
-      user_id: userId,
+      username,
     });
   }
 
-  private async searchForDeviceId(device_id: string) {
+  private async searchForDeviceId(deviceId: string) {
     return await firstValueFrom(
       this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_GET, {
-        device_id,
+        deviceId,
       }),
     );
   }
 
-  public async deleteTokensForDeviceId(device_id: string) {
-    const deviceResponse = await this.searchForDeviceId(device_id);
+  public async deleteTokensForDeviceId(deviceId: string) {
+    const deviceResponse = await this.searchForDeviceId(deviceId);
 
     if (deviceResponse.status !== HttpStatus.OK) return false;
 
@@ -115,7 +118,7 @@ export class AuthService {
     });
     const deleteDeviceResponse = await firstValueFrom(
       this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_REMOVE, {
-        device_id,
+        deviceId,
       }),
     );
 
@@ -125,8 +128,8 @@ export class AuthService {
     );
   }
 
-  public async deleteTokensForRefreshToken(refresh_token: string) {
-    const tokenResults = await this.tokenRepository.findOne({ refresh_token });
+  public async deleteTokensForRefreshToken(refreshToken: string) {
+    const tokenResults = await this.tokenRepository.findOne({ refreshToken });
 
     if (!tokenResults?.device) return false;
 
@@ -146,7 +149,7 @@ export class AuthService {
     });
     const deleteDeviceResponse = await firstValueFrom(
       this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_REMOVE, {
-        device_id: deviceResponse.resources.device.device_id,
+        deviceId: deviceResponse.resources.device.deviceId,
       }),
     );
 
@@ -157,13 +160,13 @@ export class AuthService {
   }
 
   public async deleteTokens(
-    refresh_token: string,
-    device_id?: string,
-    user_id?: string,
+    refreshToken: string,
+    deviceId?: string,
+    username?: string,
   ) {
-    if (device_id) return this.deleteTokensForDeviceId(device_id);
-    if (user_id) return this.deleteTokensForUserId(user_id);
+    if (deviceId) return this.deleteTokensForDeviceId(deviceId);
+    if (username) return this.deleteTokensForUserId(username);
 
-    return this.deleteTokensForRefreshToken(refresh_token);
+    return this.deleteTokensForRefreshToken(refreshToken);
   }
 }

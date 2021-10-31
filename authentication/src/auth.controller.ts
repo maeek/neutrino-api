@@ -1,14 +1,19 @@
-import { Controller, HttpStatus, Inject } from '@nestjs/common';
+import { Controller, HttpStatus, Inject, Logger } from '@nestjs/common';
 import { ClientProxy, MessagePattern } from '@nestjs/microservices';
 import { AuthService } from './services/auth.service';
 import { DEVICE_MESSAGE_PATTERNS, MESSAGE_PATTERNS } from './constants';
-import { LoginDto } from './interfaces/dto/login-dto';
-import { LoginResponse } from './interfaces/login-response';
+import { LoginDto } from './interfaces/dto/login.dto';
+import { LoginResponse } from './interfaces/login-response.interface';
 import { firstValueFrom } from 'rxjs';
 import { Schema } from 'mongoose';
+import { IDeviceResponse } from './interfaces/devices/device-register-response.interface';
+import { LogoutDto } from './interfaces/dto/logout.dto';
+import { LogoutResponse } from './interfaces/logout-response.interface';
 
 @Controller('Auth')
 export class AuthController {
+  private readonly logger = new Logger();
+
   constructor(
     @Inject('DEVICES_SERVICE')
     private readonly devicesServiceClient: ClientProxy,
@@ -16,86 +21,123 @@ export class AuthController {
   ) {}
 
   @MessagePattern(MESSAGE_PATTERNS.LOGIN)
-  public async login(data: LoginDto): Promise<LoginResponse> {
-    if (
-      !data?.username ||
-      !data?.password ||
-      !data?.device?.meta ||
-      !data?.device?.name
-    )
+  public async login({
+    username,
+    password,
+    device,
+  }: LoginDto): Promise<LoginResponse> {
+    try {
+      if (!username || !password || !device?.meta || !device?.name)
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          message: 'login_bad_request',
+          errors: {
+            login_bad_request:
+              'Body is missing "username", "password" or "device" property',
+          },
+        };
+
+      const { status, message, errors, resources } = await firstValueFrom(
+        this.devicesServiceClient.send<IDeviceResponse>(
+          DEVICE_MESSAGE_PATTERNS.DEVICE_REGISTER,
+          {
+            name: device.name,
+            meta: device.meta,
+          },
+        ),
+      );
+
+      if (status !== HttpStatus.CREATED) return { status, message, errors };
+
+      const loginResponse = await this.authService.login({
+        username,
+        password,
+        device,
+        ref_id: resources.device.ref_id as unknown as Schema.Types.ObjectId,
+      });
+
+      if (!loginResponse?.ok)
+        return {
+          status: HttpStatus.UNAUTHORIZED,
+          message: 'login_unauthorized',
+          errors: {
+            login_unauthorized: 'Invalid credentials',
+          },
+        };
+
       return {
-        status: HttpStatus.BAD_REQUEST,
-        message: 'login_bad_request',
-        error: 'Body is missing "username", "password" or "device" property',
+        status: HttpStatus.CREATED,
+        message: 'login_created',
+        resources: {
+          device: {
+            deviceId: resources.device.deviceId,
+          },
+          user: loginResponse.user,
+          accessToken: loginResponse.accessToken,
+          refreshToken: loginResponse.refreshToken,
+        },
       };
-
-    const registeredDevice = await firstValueFrom(
-      this.devicesServiceClient.send(DEVICE_MESSAGE_PATTERNS.DEVICE_REGISTER, {
-        name: data.device.name,
-        meta: data.device.meta,
-      }),
-    );
-
-    if (registeredDevice.status !== HttpStatus.CREATED)
-      return {
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: registeredDevice.message,
-        error: registeredDevice.errors,
-      };
-
-    const loginResponse = await this.authService.login({
-      ...data,
-      ref_id: registeredDevice.resources.device.ref_id as Schema.Types.ObjectId,
-    });
-
-    if (!loginResponse?.ok)
+    } catch (e) {
+      this.logger.error(e);
       return {
         status: HttpStatus.UNAUTHORIZED,
         message: 'login_unauthorized',
-        error: 'Username or password is incorrect',
-      };
-
-    return {
-      status: HttpStatus.OK,
-      message: 'login_ok',
-      resources: {
-        device: {
-          device_id: registeredDevice.resources.device.device_id,
+        errors: {
+          login_unauthorized: 'Invalid credentials',
         },
-        user: loginResponse.user,
-        accessToken: loginResponse.accessToken,
-        refreshToken: loginResponse.refreshToken,
-      },
-    };
+      };
+    }
   }
 
   @MessagePattern(MESSAGE_PATTERNS.LOGOUT)
-  public async logout(data: {
-    device_id: string;
-    refresh_token: string;
-    user_id: string;
-  }) {
-    const deleted = await this.authService.deleteTokens(
-      data.refresh_token,
-      data.device_id,
-      data.user_id,
-    );
+  public async logout({
+    deviceId,
+    refreshToken,
+    username,
+  }: LogoutDto): Promise<LogoutResponse> {
+    try {
+      if (![deviceId, refreshToken, username].some((u) => !!u))
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          message: 'logout_bad_request',
+          errors: {
+            logout_bad_request: 'Invalid request',
+          },
+        };
 
-    if (!deleted)
+      const deleted = await this.authService.deleteTokens(
+        refreshToken,
+        deviceId,
+        username,
+      );
+
+      if (!deleted)
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          message: 'logout_bad_request',
+          errors: {
+            logout_bad_request: 'Invalid request',
+          },
+        };
+
+      return {
+        status: HttpStatus.NO_CONTENT,
+        message: 'logout_success',
+      };
+    } catch (e) {
+      this.logger.error(e);
       return {
         status: HttpStatus.BAD_REQUEST,
         message: 'logout_bad_request',
-        error: 'Invalid request',
+        errors: {
+          logout_bad_request: 'Invalid credentials',
+        },
       };
-
-    return {
-      status: HttpStatus.NO_CONTENT,
-      message: 'logout_success',
-    };
+    }
   }
 
-  @MessagePattern(MESSAGE_PATTERNS.KEEPALIVE)
-  public async keepalive(data: { refresh_token: string }) {}
+  // @MessagePattern(MESSAGE_PATTERNS.KEEPALIVE)
+  // public async keepalive(data: { refreshToken: string }) {}
 
   // @MessagePattern('token_decode')
   // public async decodeToken(data: {

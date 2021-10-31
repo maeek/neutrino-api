@@ -6,8 +6,8 @@ import { ClientProxyFactory } from '@nestjs/microservices';
 // import { PermissionGuard } from './services/guards/permission.guard';
 
 import { ConfigService } from './services/config/config.service';
-import { DevicesController } from './devices.controller';
-import { AuthenticationController } from './authentication.controller';
+import { DevicesController } from './controllers/devices.controller';
+import { AuthenticationController } from './controllers/authentication.controller';
 
 @Module({
   imports: [],

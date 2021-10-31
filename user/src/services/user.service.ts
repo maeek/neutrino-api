@@ -1,20 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
 import { User } from '../schemas/user.schema';
 import { UserRepository } from '../user.repository';
 
-import { ConfigService } from './config/config.service';
-// import { IUser } from '../interfaces/user.interface';
-// import { IUserLink } from '../interfaces/user-link.interface';
-
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly userRepository: UserRepository,
-    // @InjectModel('UserLink') private readonly userLinkModel: Model<IUserLink>,
-    // private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
   private EXCLUDED_KEYS = ['_id'];
 
@@ -24,37 +14,30 @@ export class UserService {
 
   public async getUserForFrontend(
     params: Partial<User>,
-    excludedKeys = this.EXCLUDED_KEYS
+    excludedKeys = this.EXCLUDED_KEYS,
   ): Promise<User> {
     const user = await this.userRepository.findOne(params).exec();
 
-    excludedKeys.forEach(k => {
+    excludedKeys.forEach((k) => {
       delete user[k];
     });
 
     return user;
   }
 
-  public async getUsers(
-    params: Partial<User>,
-    limit = 100
-  ): Promise<User[]> {
-    return this.userRepository.find(params)
-      .limit(limit)
-      .exec();
+  public async getUsers(params: Partial<User>, limit = 100): Promise<User[]> {
+    return this.userRepository.find(params).limit(limit).exec();
   }
 
   public async getUsersForFrontend(
     params: Partial<User>,
     limit = 100,
-    excludedKeys = this.EXCLUDED_KEYS
+    excludedKeys = this.EXCLUDED_KEYS,
   ): Promise<User[]> {
-    const users = await this.userRepository.find(params)
-      .limit(limit)
-      .exec();
+    const users = await this.userRepository.find(params).limit(limit).exec();
 
-    users.forEach(u => {
-      excludedKeys.forEach(k => {
+    users.forEach((u) => {
+      excludedKeys.forEach((k) => {
         delete u[k];
       });
     });

@@ -13,7 +13,7 @@ import { firstValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import { DEVICE_MESSAGE_PATTERNS } from './constants';
+import { DEVICE_MESSAGE_PATTERNS } from '../constants';
 
 @Controller('devices')
 @ApiTags('devices')

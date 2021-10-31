@@ -22,24 +22,25 @@ import {
 } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
 import { Request, Response as EResponse } from 'express';
-import { AUTHENTICATION_MESSAGE_PATTERNS } from './constants';
+import { AUTHENTICATION_MESSAGE_PATTERNS } from '../constants';
+import { API_HEADERS } from '../interfaces/authentication/headers.enum';
+
 import {
   LoginErrorResponse,
   LoginResponse,
-} from './interfaces/authentication/login-response.dto';
-import { API_HEADERS } from './interfaces/authentication/headers.enum';
+} from '../interfaces/authentication/login-response.dto';
 import {
   LoginDto,
   LoginResponseDto,
-} from './interfaces/authentication/dto/login.dto';
+} from '../interfaces/authentication/dto/login.dto';
 import {
   LogoutDto,
   LogoutResponseDto,
-} from './interfaces/authentication/dto/logout.dto';
+} from '../interfaces/authentication/dto/logout.dto';
 import {
   LogoutErrorResponse,
   LogoutResponse,
-} from './interfaces/authentication/logout-response.dto';
+} from '../interfaces/authentication/logout-response.dto';
 
 @Controller('auth')
 @ApiTags('auth')

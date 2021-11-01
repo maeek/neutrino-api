@@ -22,6 +22,7 @@
     "amqp-connection-manager": "^3.7.0",
     "amqplib": "^0.8.0",
     "bull": "^3.29.3",
+    "helmet": "^4.6.0",
     "reflect-metadata": "0.1.13",
     "rimraf": "3.0.2",
     "rxjs": "7.4.0",

@@ -14,7 +14,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     @Inject('AUTH_SERVICE') private readonly tokenServiceClient: ClientProxy,
-    @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
+    @Inject('USERS_SERVICE') private readonly usersServiceClient: ClientProxy,
   ) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -46,7 +46,7 @@ export class AuthGuard implements CanActivate {
     }
 
     const userInfo = await firstValueFrom(
-      this.userServiceClient.send('user_get_by_id', userTokenInfo.data.userId),
+      this.usersServiceClient.send('user_get_by_id', userTokenInfo.data.userId),
     );
 
     request.user = userInfo.user;

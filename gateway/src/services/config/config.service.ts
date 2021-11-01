@@ -16,7 +16,7 @@ export class ConfigService {
       },
       transport: Transport.RMQ,
     };
-    this.envConfig.userService = {
+    this.envConfig.usersService = {
       options: {
         urls: [process.env.RABBITMQ_URL],
         queue: process.env.RABBITMQ_USER_QUEUE,

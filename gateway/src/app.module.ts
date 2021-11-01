@@ -6,12 +6,12 @@ import { ClientProxyFactory } from '@nestjs/microservices';
 // import { PermissionGuard } from './services/guards/permission.guard';
 
 import { ConfigService } from './services/config/config.service';
-import { DevicesController } from './controllers/devices.controller';
 import { AuthenticationController } from './controllers/authentication.controller';
+import { UsersController } from './controllers/users.controller';
 
 @Module({
   imports: [],
-  controllers: [DevicesController, AuthenticationController],
+  controllers: [AuthenticationController, UsersController],
   providers: [
     ConfigService,
     {
@@ -22,22 +22,22 @@ import { AuthenticationController } from './controllers/authentication.controlle
       },
       inject: [ConfigService],
     },
-    {
-      provide: 'DEVICES_SERVICE',
-      useFactory: (configService: ConfigService) => {
-        const devicesServiceOptions = configService.get('devicesService');
-        return ClientProxyFactory.create(devicesServiceOptions);
-      },
-      inject: [ConfigService],
-    },
     // {
-    //   provide: 'USER_SERVICE',
+    //   provide: 'DEVICES_SERVICE',
     //   useFactory: (configService: ConfigService) => {
-    //     const userServiceOptions = configService.get('userService');
-    //     return ClientProxyFactory.create(userServiceOptions);
+    //     const devicesServiceOptions = configService.get('devicesService');
+    //     return ClientProxyFactory.create(devicesServiceOptions);
     //   },
     //   inject: [ConfigService],
     // },
+    {
+      provide: 'USERS_SERVICE',
+      useFactory: (configService: ConfigService) => {
+        const usersServiceOptions = configService.get('usersService');
+        return ClientProxyFactory.create(usersServiceOptions);
+      },
+      inject: [ConfigService],
+    },
     // {
     //   provide: 'PERMISSION_SERVICE',
     //   useFactory: (configService: ConfigService) => {

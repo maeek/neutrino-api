@@ -102,9 +102,8 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ type: LogoutDto })
   @ApiHeader({
-    name: 'x-ne-refreshtoken',
+    name: 'Authorization',
     required: true,
-    example: 'eyASDHOoadjnasda.eyAJODdjoanoansdadasdadojIodho.DHAOISDOHIA842',
   })
   @ApiOkResponse({ type: LogoutResponse })
   @ApiUnauthorizedResponse({ type: LogoutErrorResponse })
@@ -114,14 +113,14 @@ export class AuthenticationController {
     @Body() dto: LogoutDto,
   ): Promise<LogoutResponse> {
     const { deviceId, username } = dto;
-    const refreshToken = request.headers[API_HEADERS.X_NE_REFRESHTOKEN];
+    const refreshToken = request.headers[API_HEADERS.AUTHORIZATION];
 
     const { status, message, errors } = await firstValueFrom(
       this.authenticationServiceClient.send<LogoutResponseDto>(
         AUTHENTICATION_MESSAGE_PATTERNS.LOGOUT,
         {
           deviceId,
-          refreshToken,
+          refreshToken: refreshToken?.split(' ')?.[1] || '',
           username,
         },
       ),

@@ -2,7 +2,7 @@
   "eslint.workingDirectories": [
     "gateway",
     "permission",
-    "user",
+    "users",
     "db",
     "devices",
     "authentication"

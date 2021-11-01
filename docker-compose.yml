@@ -29,10 +29,10 @@ services:
       - .env
     networks:
       - backend
-  user:
-    build: ./user
+  users:
+    build: ./users
     restart: always
-    hostname: user
+    hostname: users
     env_file:
       - .env
     networks:

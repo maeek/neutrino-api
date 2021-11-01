@@ -1,22 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../schemas/user.schema';
-import { UserRepository } from '../user.repository';
+import * as bcrypt from 'bcrypt';
+import { User } from '../schemas/users.schema';
+import { UsersRepository } from '../users.repository';
+import { ConfigService } from './config/config.service';
 
 @Injectable()
-export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+export class UsersService {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly usersRepository: UsersRepository,
+  ) {}
 
   private EXCLUDED_KEYS = ['_id'];
 
   public async getUser(params: { username: string }): Promise<User> {
-    return this.userRepository.findOne(params).exec();
+    return this.usersRepository.findOne(params).exec();
   }
 
   public async getUserForFrontend(
     params: Partial<User>,
     excludedKeys = this.EXCLUDED_KEYS,
   ): Promise<User> {
-    const user = await this.userRepository.findOne(params).exec();
+    const user = await this.usersRepository.findOne(params).exec();
 
     excludedKeys.forEach((k) => {
       delete user[k];
@@ -26,7 +31,7 @@ export class UserService {
   }
 
   public async getUsers(params: Partial<User>, limit = 100): Promise<User[]> {
-    return this.userRepository.find(params).limit(limit).exec();
+    return this.usersRepository.find(params).limit(limit).exec();
   }
 
   public async getUsersForFrontend(
@@ -34,7 +39,7 @@ export class UserService {
     limit = 100,
     excludedKeys = this.EXCLUDED_KEYS,
   ): Promise<User[]> {
-    const users = await this.userRepository.find(params).limit(limit).exec();
+    const users = await this.usersRepository.find(params).limit(limit).exec();
 
     users.forEach((u) => {
       excludedKeys.forEach((k) => {
@@ -49,13 +54,30 @@ export class UserService {
   //   id: string,
   //   userParams: { is_confirmed: boolean },
   // ): Promise<IUser> {
-  //   return this.userRepository.updateOne({ _id: id }, userParams).exec();
+  //   return this.usersRepository.updateOne({ _id: id }, userParams).exec();
   // }
 
-  // public async createUser(user: IUser): Promise<IUser> {
-  //   const userRepository = new this.userModel(user);
-  //   return await userModel.save();
-  // }
+  public async getUserExist(username: string) {
+    return await this.usersRepository.exists({ username });
+  }
+
+  public async createUser(user: User & { password: string }): Promise<any> {
+    const { password, ...rest } = user;
+
+    if (await this.getUserExist(user.username)) {
+      return {
+        exists: true,
+      };
+    }
+
+    const salt = await bcrypt.genSalt(this.configService.getSaltRounds());
+    const hash = await bcrypt.hash(password, salt);
+
+    return this.usersRepository.create({
+      hash,
+      ...rest,
+    });
+  }
 
   // public async createUserLink(id: string): Promise<IUserLink> {
   //   const userLinkModel = new this.userLinkModel({

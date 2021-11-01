@@ -1,12 +1,12 @@
 import { HttpStatus } from '@nestjs/common';
-import { User } from '../schemas/user.schema';
+import { User } from '../schemas/users.schema';
 
 type GetUserResponseOmmited = '_id' | 'hash' | 'role';
 export interface GetUserResponse {
   status: HttpStatus;
   message?: string;
   resources: {
-    user: Omit<User, GetUserResponseOmmited> | null;
+    users: Omit<User, GetUserResponseOmmited>[] | [];
   };
   error?: string;
 }

@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
-import { UserModule } from './user.module';
+import { UsersModule } from './users.module';
 import { Transport, RmqOptions } from '@nestjs/microservices';
 
 import { ConfigService } from './services/config/config.service';
 
 async function bootstrap() {
   const configService = new ConfigService();
-  const app = await NestFactory.createMicroservice(UserModule, {
+  const app = await NestFactory.createMicroservice(UsersModule, {
     transport: Transport.RMQ,
     options: {
       urls: [configService.get('rabbitmqUrl')],

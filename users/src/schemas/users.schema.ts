@@ -46,7 +46,7 @@ export class User {
 
   @Prop({
     type: String,
-    required: [true, 'User role is required'],
+    required: [true, 'User type is required'],
     default: UserType.USER,
   })
   type: string;

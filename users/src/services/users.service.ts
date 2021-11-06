@@ -11,7 +11,7 @@ export class UsersService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  private EXCLUDED_KEYS = ['_id'];
+  private FRONTEND_EXCLUDED_KEYS = ['id', 'hash', 'createdAt'];
 
   public async getUser(params: { username: string }): Promise<User> {
     return this.usersRepository.findOne(params).exec();
@@ -19,9 +19,9 @@ export class UsersService {
 
   public async getUserForFrontend(
     params: Partial<User>,
-    excludedKeys = this.EXCLUDED_KEYS,
+    excludedKeys = this.FRONTEND_EXCLUDED_KEYS,
   ): Promise<User> {
-    const user = await this.usersRepository.findOne(params).exec();
+    const user = (await this.usersRepository.findOne(params).exec()).toObject();
 
     excludedKeys.forEach((k) => {
       delete user[k];
@@ -34,10 +34,27 @@ export class UsersService {
     return this.usersRepository.find(params).limit(limit).exec();
   }
 
+  public async getUsersPaginated(
+    params: Partial<User>,
+    page = 0,
+    perPage = 100,
+  ): Promise<User[]> {
+    const docsCount = await this.usersRepository.count(params);
+    let pg = Math.max(0, page) * perPage;
+    const lm = Math.max(1, perPage);
+
+    // TODO: check if this is correct, im stoned
+    if (pg * lm > docsCount) {
+      pg = Math.ceil(docsCount / lm);
+    }
+
+    return this.usersRepository.find(params).skip(pg).limit(lm).exec();
+  }
+
   public async getUsersForFrontend(
     params: Partial<User>,
     limit = 100,
-    excludedKeys = this.EXCLUDED_KEYS,
+    excludedKeys = this.FRONTEND_EXCLUDED_KEYS,
   ): Promise<User[]> {
     const users = await this.usersRepository.find(params).limit(limit).exec();
 
@@ -49,13 +66,6 @@ export class UsersService {
 
     return users;
   }
-
-  // public async updateUserById(
-  //   id: string,
-  //   userParams: { is_confirmed: boolean },
-  // ): Promise<IUser> {
-  //   return this.usersRepository.updateOne({ _id: id }, userParams).exec();
-  // }
 
   public async getUserExist(username: string) {
     return await this.usersRepository.exists({ username });
@@ -79,27 +89,7 @@ export class UsersService {
     });
   }
 
-  // public async createUserLink(id: string): Promise<IUserLink> {
-  //   const userLinkModel = new this.userLinkModel({
-  //     user_id: id,
-  //   });
-  //   return await userLinkModel.save();
-  // }
-
-  // public async getUserLink(link: string): Promise<IUserLink[]> {
-  //   return this.userLinkModel.find({ link, is_used: false }).exec();
-  // }
-
-  // public async updateUserLinkById(
-  //   id: string,
-  //   linkParams: { is_used: boolean },
-  // ): Promise<IUserLink> {
-  //   return this.userLinkModel.updateOne({ _id: id }, linkParams);
-  // }
-
-  // public getConfirmationLink(link: string): string {
-  //   return `${this.configService.get('baseUri')}:${this.configService.get(
-  //     'gatewayPort',
-  //   )}/users/confirm/${link}`;
-  // }
+  public async deleteUser(params: Partial<User>): Promise<any> {
+    return this.usersRepository.remove(params);
+  }
 }

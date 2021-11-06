@@ -8,6 +8,10 @@ import { User, UserDocument } from './schemas/users.schema';
 export class UsersRepository {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
+  async count(filter: FilterQuery<UserDocument>) {
+    return this.userModel.count(filter);
+  }
+
   async exists(existsFilterQuery: FilterQuery<UserDocument>) {
     return this.userModel.exists(existsFilterQuery);
   }

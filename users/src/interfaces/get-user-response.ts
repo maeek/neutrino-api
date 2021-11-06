@@ -5,8 +5,8 @@ type GetUserResponseOmmited = '_id' | 'hash' | 'role';
 export interface GetUserResponse {
   status: HttpStatus;
   message?: string;
-  resources: {
+  resources?: {
     users: Omit<User, GetUserResponseOmmited>[] | [];
   };
-  error?: string;
+  errors?: { [key: string]: string };
 }

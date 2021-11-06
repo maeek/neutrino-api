@@ -15,14 +15,35 @@ export class UsersController {
   }: {
     username: string;
   }): Promise<GetUserResponse> {
-    let result: GetUserResponse;
-
     if (!username) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'get_user_bad_request',
+        errors: {
+          get_user_bad_request: 'username is required',
+        },
+      };
     }
 
-    // const user = await this.usersService.getUserForFrontend({ username });
+    const user = await this.usersService.getUserForFrontend({ username });
 
-    return result;
+    if (!user) {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        message: 'get_user_not_found',
+        errors: {
+          get_user_not_found: 'User not found',
+        },
+      };
+    }
+
+    return {
+      status: HttpStatus.OK,
+      message: 'get_user_ok',
+      resources: {
+        users: [user],
+      },
+    };
   }
 
   // TODO: input serialization
@@ -66,6 +87,36 @@ export class UsersController {
           },
         ],
       },
+    };
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.REMOVE_USER)
+  public async removeUser({ username }: { username: string }): Promise<any> {
+    if (!username) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'get_user_bad_request',
+        errors: {
+          get_user_bad_request: 'username is required',
+        },
+      };
+    }
+
+    const removeUser = await this.usersService.deleteUser({ username });
+
+    if (removeUser.deletedCount === 0) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'get_user_bad_request',
+        errors: {
+          get_user_bad_request: 'user not deleted',
+        },
+      };
+    }
+
+    return {
+      status: HttpStatus.NO_CONTENT,
+      message: 'get_user_no_content',
     };
   }
 }

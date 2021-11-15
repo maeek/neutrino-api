@@ -5,6 +5,7 @@
     "users",
     "db",
     "devices",
-    "authentication"
+    "authentication",
+    "types"
   ]
 }

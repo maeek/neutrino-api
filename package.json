@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "install-all": "npm --prefix authentication install; npm --prefix devices install; npm --prefix gateway install; npm --prefix permission install; npm --prefix users install",
     "lint": "npm --prefix devices run lint && npm --prefix users run lint && npm --prefix authentication run lint && npm --prefix gateway run lint && npm --prefix permission run lint"
   },
   "repository": {

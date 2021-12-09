@@ -46,13 +46,12 @@ export class AuthService {
     ref_id,
   }: LoginDto & {
     ref_id: Schema.Types.ObjectId;
-  }): Promise<LoginResponseResources> {
+  }) {
     const user = await this.validateUserLocal(username, password);
 
-    if (!user) return {} as LoginResponseResources;
+    if (!user) return {};
 
     return {
-      ok: true,
       user: {
         username,
         type: user.type,

@@ -56,7 +56,7 @@ export class AuthController {
         ref_id: resources.device.ref_id as unknown as Schema.Types.ObjectId,
       });
 
-      if (!loginResponse?.ok)
+      if (!loginResponse?.user)
         return {
           status: HttpStatus.UNAUTHORIZED,
           message: 'login_unauthorized',

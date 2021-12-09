@@ -1,7 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 
 export interface LoginResponseResources {
-  ok: boolean;
   user: {
     username: string;
     type: string;

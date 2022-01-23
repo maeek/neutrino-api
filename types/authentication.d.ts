@@ -1,43 +1,37 @@
 import { HttpStatus } from '@nestjs/common';
 
-export namespace Neutrino.Authentication {
-  export interface LoginDto {
-    username: string;
-    password: string;
-    device: {
-      name: string;
-      meta: string;
-    };
-    loginStrategy?: number; // To be changed to enum, currently only one login strategy
-  }
-
-  export interface LoginResponseResources {
-    ok: boolean;
-    user: {
-      username: string;
-      type: string;
-    };
-    accessToken: string;
-    refreshToken: string;
-  }
-
-  export interface LoginResponse {
-    status: HttpStatus;
-    message: string;
-    resources?: {
-      device: {
-        deviceId: string;
+export namespace Authentication {
+  export namespace Response {
+    export interface Login {
+      status: HttpStatus;
+      message: string;
+      resources?: {
+        device: {
+          deviceId: string;
+        };
+        user: any;
+        accessToken: string;
+        refreshToken: string;
       };
-      user: any;
-      accessToken: string;
-      refreshToken: string;
-    };
-    errors?: { [key: string]: string };
+      errors?: { [key: string]: string };
+    }
   }
 
-  export interface LogoutDto {
-    deviceId?: string;
-    refreshToken: string;
-    username?: string;
+  export namespace Dto {
+    export interface Login {
+      username: string;
+      password: string;
+      device: {
+        name: string;
+        meta: string;
+      };
+      loginStrategy?: number; // To be changed to enum, currently only one login strategy
+    }
+
+    export interface Logout {
+      deviceId?: string;
+      refreshToken: string;
+      username?: string;
+    }
   }
 }
